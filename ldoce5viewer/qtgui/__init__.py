@@ -73,6 +73,18 @@ def run(argv):
         app.sendMessage("activate")
         return 1
 
+    # Set application style
+    app.setStyle("Fusion")
+
+    # Load dark theme
+    from PySide6.QtCore import QFile, QTextStream
+    qss_file = QFile(os.path.join(os.path.dirname(__file__), "dark_theme.qss"))
+    if qss_file.open(QFile.ReadOnly | QFile.Text):
+        stream = QTextStream(qss_file)
+        app.setStyleSheet(stream.readAll())
+        qss_file.close()
+
+
     # Load the configuration file
     config.debug = options.debug
     config.load()

@@ -53,4 +53,7 @@ app = BUNDLE(
     name='LDOCE5 Viewer.app',
     icon='./ldoce5viewer/qtgui/resources/ldoce5viewer.icns',
     bundle_identifier=None,
+    info_plist={
+        'NSRequiresAquaSystemAppearance': False
+    },
 )
