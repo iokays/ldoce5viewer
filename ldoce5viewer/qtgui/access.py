@@ -156,16 +156,19 @@ class MyUrlSchemeHandler(QWebEngineUrlSchemeHandler):
     def play_audio(self, path):
         (data, mime) = self._ldoce5.get_content(path)
 
-        if self._player is None:
-            self._buffer = self.create_buffer(data, self.parent())
-            self._audio_output = QAudioOutput(self.parent())
-            self._player = QMediaPlayer(self.parent())
-            self._player.setAudioOutput(self._audio_output)
-            self._player.setSourceDevice(self._buffer)
-        else:
-            self._buffer.close()
-            self._buffer.setData(data)
-            self._buffer.open(QBuffer.OpenModeFlag.ReadOnly)
+        # If a player exists, stop it and schedule it for deletion to ensure a clean state.
+        if self._player:
+            self._player.stop()
+            self._player.deleteLater()
+        if self._audio_output:
+            self._audio_output.deleteLater()
+        if self._buffer:
+            self._buffer.deleteLater()
 
-        self._buffer.seek(0)
+        # Always create new objects for playback
+        self._buffer = self.create_buffer(data, self.parent())
+        self._audio_output = QAudioOutput(self.parent())
+        self._player = QMediaPlayer(self.parent())
+        self._player.setAudioOutput(self._audio_output)
+        self._player.setSourceDevice(self._buffer)
         self._player.play()
