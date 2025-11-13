@@ -75,6 +75,9 @@ class MyUrlSchemeHandler(QWebEngineUrlSchemeHandler):
         self._searcher_de = searcher_de
         config = get_config()
         self._ldoce5 = LDOCE5(config.get("dataDir", ""), config.filemap_path)
+        self._player = None
+        self._audio_output = None
+        self._buffer = None
 
     def update_searcher(self, searcher_hp, searcher_de):
         self._searcher_hp = searcher_hp
@@ -153,9 +156,16 @@ class MyUrlSchemeHandler(QWebEngineUrlSchemeHandler):
     def play_audio(self, path):
         (data, mime) = self._ldoce5.get_content(path)
 
-        buffer = self.create_buffer(data, self.parent())
-        audio_output = QAudioOutput(self.parent())
-        player = QMediaPlayer(self.parent())
-        player.setAudioOutput(audio_output)
-        player.setSourceDevice(buffer, QUrl(path))
-        player.play()
+        if self._player is None:
+            self._buffer = self.create_buffer(data, self.parent())
+            self._audio_output = QAudioOutput(self.parent())
+            self._player = QMediaPlayer(self.parent())
+            self._player.setAudioOutput(self._audio_output)
+            self._player.setSourceDevice(self._buffer)
+        else:
+            self._buffer.close()
+            self._buffer.setData(data)
+            self._buffer.open(QBuffer.OpenModeFlag.ReadOnly)
+
+        self._buffer.seek(0)
+        self._player.play()
